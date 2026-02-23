@@ -197,7 +197,7 @@ def evaluate(args, eval_dataset, model):
 
     print(' ')
 
-    return total_correct_char/total_denominator_char, total_correct_comp/total_denominator_comp, total_correct_stru/total_denominator_stru, loss_eval/len(eval_dataloader)
+    return total_correct_char / max(total_denominator_char, 1), total_correct_comp / max(total_denominator_comp, 1), total_correct_stru / max(total_denominator_stru, 1), loss_eval / max(len(eval_dataloader), 1)
 
 
 def main():
@@ -260,7 +260,7 @@ def main():
                 char_acc, comp_acc, stru_acc, loss_eval = evaluate(args, eval_dataset, model)
 
                 logger.info(f"STEP:{step_cnt}\tLOSS:{train_loss / args.logging_steps:.8f}\tDEV LOSS:{loss_eval:.8f}")
-                logger.info(f"TRAIN:\tchar_acc:{total_correct_char / total_denominator_char:.6f}\tcomp_acc:{total_correct_comp / total_denominator_comp:.6f}\tstru_acc:{total_correct_stru / total_denominator_stru:.6f}")
+                logger.info(f"TRAIN:\tchar_acc:{total_correct_char / max(total_denominator_char, 1.0):.6f}\tcomp_acc:{total_correct_comp / max(total_denominator_comp, 1.0):.6f}\tstru_acc:{total_correct_stru / max(total_denominator_stru, 1.0):.6f}")
                 logger.info(f"DEV:\tchar_acc:{char_acc:.6f}\tcomp_acc:{comp_acc:.6f}\tstru_acc:{stru_acc:.6f}")
                 train_loss = 0.
                 total_correct_char, total_denominator_char = 0., 0.

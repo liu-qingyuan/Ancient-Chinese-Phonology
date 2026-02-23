@@ -61,20 +61,29 @@ class Net(BertForMaskedLM):
 
         char_logits = self.char_embedding(sequence_output)
         char_predict = torch.argmax(char_logits, dim=-1)
-        char_masked_lm_loss = loss_fct(char_logits.view(-1, char_logits.size(-1)), char_label.view(-1))
         char_mat = char_label != -100
+        if torch.any(char_mat):
+            char_masked_lm_loss = loss_fct(char_logits[char_mat], char_label[char_mat])
+        else:
+            char_masked_lm_loss = torch.tensor(0.0, device=char_logits.device, dtype=char_logits.dtype)
         char_correct = (char_predict == char_label) & char_mat
 
         comp_logits = self.cls(sequence_output)
         comp_predict = torch.argmax(comp_logits, dim=-1)
-        masked_lm_loss = loss_fct(comp_logits.view(-1, self.config.vocab_size), comp_label.view(-1))
         comp_mat = comp_label != -100
+        if torch.any(comp_mat):
+            masked_lm_loss = loss_fct(comp_logits[comp_mat], comp_label[comp_mat])
+        else:
+            masked_lm_loss = torch.tensor(0.0, device=comp_logits.device, dtype=comp_logits.dtype)
         comp_correct = (comp_predict == comp_label) & comp_mat
 
         stru_logits = self.stru_lm_head(sequence_output)
         stru_predict = torch.argmax(stru_logits, dim=-1)
-        stru_masked_lm_loss = loss_fct(stru_logits.view(-1, stru_logits.size(-1)), stru_label.view(-1))
         stru_mat = stru_label != -100
+        if torch.any(stru_mat):
+            stru_masked_lm_loss = loss_fct(stru_logits[stru_mat], stru_label[stru_mat])
+        else:
+            stru_masked_lm_loss = torch.tensor(0.0, device=stru_logits.device, dtype=stru_logits.dtype)
         stru_correct = (stru_predict == stru_label) & stru_mat
 
         loss = masked_lm_loss + char_masked_lm_loss + stru_masked_lm_loss
